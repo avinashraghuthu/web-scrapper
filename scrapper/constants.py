@@ -1,0 +1,6 @@
+STR_INVALID_URL = 'Please provide a valid url'
+STR_NO_URL_PROVIDED = 'No url provided'
+STR_WEB_SCRAPE_SUCCESS = 'Successfully parsed the url'
+STR_WEB_URL_INFO_RETRIEVED = 'Web urls information retrieved successfully'
+STR_LIMIT_OFFSET_INVALID = 'Offset or limit provided is not valid'
+STR_NO_LIMIT_OFFSET = 'Offset or limit is missing'

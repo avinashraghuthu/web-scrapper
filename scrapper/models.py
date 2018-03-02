@@ -15,9 +15,9 @@ class ScrapperInformationManager(models.Manager):
 		r = requests.get(web_url)
 		status_code = r.status_code
 		data = r.text
-		soup = BeautifulSoup(data)
-		h1_tag_info = soup.find_all('h1')
-		h2_tag_info = soup.find_all('h2')
+		soup = BeautifulSoup(data, 'html.parser')
+		h1_tag_info = [i.encode() for i in soup.find_all('h1')]
+		h2_tag_info = [i.encode() for i in soup.find_all('h2')]
 		tag_information = {
 			'h1': h1_tag_info,
 			'h2': h2_tag_info
@@ -30,18 +30,19 @@ class ScrapperInformationManager(models.Manager):
 		self.create_scrape_information(web_url, data, tag_information_json, status_code, status)
 		return tag_information
 
-	def create_scrape_information(self, web_url, site_formation, tag_information,status_code, status):
-		obj = self.model(web_url=web_url, site_formation=site_formation, tag_information=tag_information,
+	def create_scrape_information(self, web_url, site_information, tag_information,status_code, status):
+		obj = self.model(web_url=web_url, site_information=site_information, tag_information=tag_information,
 						 status_code=status_code,status=status)
 		obj.save()
 		return obj
 
-	def get_all_urls_hitted(self):
+	def get_all_urls_hitted(self, limit, offset):
 		web_urls_info = []
-		scrapper_list = self.objects.all()
+		count = self.all().count()
+		scrapper_list = self.all()[offset:limit]
 		for scrapper in scrapper_list:
 			web_urls_info.append(scrapper.serializer())
-		return web_urls_info
+		return web_urls_info, count
 
 
 class ScrapperInformation(models.Model):
@@ -50,7 +51,7 @@ class ScrapperInformation(models.Model):
 	FAILURE = 1
 	status_choices = ((SUCCESS, 'Success'),
 					  (FAILURE, 'Failure'),
-					  )
+						)
 
 	web_url = models.URLField(max_length=1000)
 	site_information = models.TextField(null=True, blank=True)  # stores entire html of url
@@ -62,7 +63,7 @@ class ScrapperInformation(models.Model):
 	objects = ScrapperInformationManager()
 
 	def __unicode__(self):
-		str(self.web_url) + ' ' + str(self.status_code)
+		return str(self.web_url) + ' ' + str(self.status_code)
 
 	def serializer(self):
 		data = dict()
