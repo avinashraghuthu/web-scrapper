@@ -7,7 +7,7 @@ Running the setup:
     Run the following command to run the server:
         ./manage.py runserver 0.0.0.0:8000
 
-        where last arguement specifie the Ip and port on which we want to run
+        where last argument specify the Ip and port on which we want to run
 
 
 
@@ -28,7 +28,7 @@ APIS:
     METHOD: GET
 
     PARAMETERS: offset
-                    - Gives the starting point of the pagination list
+                    - Gives the starting point of the pagination list, 
                 limit
                     - Specifies the endning point of the pagination list
 
