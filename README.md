@@ -28,7 +28,7 @@ APIS:
     METHOD: GET
 
     PARAMETERS: offset
-                    - Gives the starting point of the pagination list, 
+                    - Gives the starting point of the pagination list,
                 limit
                     - Specifies the endning point of the pagination list
 

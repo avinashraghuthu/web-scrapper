@@ -9,8 +9,9 @@ from constants import (STR_INVALID_URL,
 					   STR_NO_URL_PROVIDED,
 					   STR_WEB_SCRAPE_SUCCESS,
 						STR_WEB_URL_INFO_RETRIEVED,
-					   STR_LIMIT_OFFSET_INVALID)
+					   STR_LIMIT_OFFSET_INVALID, STR_BAD_REQUEST)
 from models import ScrapperInformation
+import json
 # Create your views here.
 
 
@@ -30,14 +31,16 @@ class WebScrapperView(View):
 
 	# @decorator_4xx([]) # to authenticate the user for api
 	def post(self, request, *args, **kwargs):
-		req_data = request.POST
-		web_url = req_data.get('web_url')
 		try:
+			json_request = json.loads(request.body.decode('utf-8'))
+			web_url = json_request['web_url']
 			self._validate(web_url)
 			tag_information = ScrapperInformation.objects.scrape_url(web_url)
 			self.response['res_data']['tags'] = tag_information
 			self.response['res_str'] = STR_WEB_SCRAPE_SUCCESS
 			return send_201(self.response)
+		except (ValueError, KeyError), e:
+			self.response['res_str'] = STR_BAD_REQUEST
 		except NoWebUrlProvided, e:
 			self.response['res_str'] = STR_NO_URL_PROVIDED
 		except InvalidWebUrl, e:

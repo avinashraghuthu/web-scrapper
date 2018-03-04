@@ -5,7 +5,7 @@ from django.db import models
 import requests
 from bs4 import BeautifulSoup
 import json
-
+from django.db import IntegrityError
 # Create your models here.
 
 
@@ -27,7 +27,11 @@ class ScrapperInformationManager(models.Manager):
 			status = self.model.SUCCESS
 		else:
 			status = self.model.FAILURE
-		self.create_scrape_information(web_url, data, tag_information_json, status_code, status)
+		try:
+			self.create_scrape_information(web_url, data, tag_information_json, status_code, status)
+		except IntegrityError, e:
+			scrapper_obj = self.get(web_url=web_url)
+			scrapper_obj.update_scrapper(data, tag_information_json, status_code, status)
 		return tag_information
 
 	def create_scrape_information(self, web_url, site_information, tag_information,status_code, status):
@@ -53,10 +57,11 @@ class ScrapperInformation(models.Model):
 					  (FAILURE, 'Failure'),
 						)
 
-	web_url = models.URLField(max_length=1000)
+	web_url = models.URLField(primary_key=True,max_length=1000)
 	site_information = models.TextField(null=True, blank=True)  # stores entire html of url
 	tag_information = models.TextField(null=True, blank=True)  # stores information wrt tags.Here h1 and h2 as of now
 	created_on = models.DateTimeField(auto_now_add=True)
+	updated_on = models.DateTimeField(auto_now=True, null=True, blank=True)
 	status_code = models.IntegerField(null=True, blank=True)  # stores http status code of response
 	status = models.PositiveSmallIntegerField(choices=status_choices)
 
@@ -71,5 +76,14 @@ class ScrapperInformation(models.Model):
 		data['tag_information'] = json.loads(self.tag_information)
 		data['status_code'] = self.status_code
 		data['status'] = dict(self.status_choices).get(self.status)
+		data['created_on'] = self.created_on.strftime('%Y-%m-%d')
+		data['updated_on'] = self.created_on.strftime('%Y-%m-%d') if self.updated_on else None
 		return data
+
+	def update_scrapper(self, site_information, tag_information, status_code, status):
+		self.site_information = site_information
+		self.tag_information = tag_information
+		self.status_code = status_code
+		self.status = status
+		self.save()
 
